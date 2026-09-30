@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 from datetime import datetime, timezone
 
 import argparse
@@ -6,7 +7,12 @@ from pathlib import Path
 
 from collections import Counter
 
-from sentinela.validation import validate_dates
+from sentinela.validation import (
+    collect_record_issues,
+    validate_calendar, 
+    validate_dates,
+)
+from sentinela.transformation import add_epidemiological_week_2026
 from sentinela.storage import export_srag_csv
 
 from sentinela.ingestion import (
@@ -62,16 +68,50 @@ def main() -> None:
         help="Caminho para exportar os registros selecionados.",
     )
 
+    parser.add_argument(
+        "--issues-output",
+        type=Path,
+        help="Caminho do CSV de problemas identificados.",
+    )
+
     args = parser.parse_args()
+
+    if args.output is not None:
+        if args.output.resolve() == args.csv_path.resolve():
+            parser.error("O CSV de saída não pode substituir a fonte.")
+
+    if args.report is not None:
+        if args.report.resolve() == args.csv_path.resolve():
+            parser.error("O relatório não pode substituir a fonte.")
 
     if args.output is not None and args.report is not None:
         if args.output.resolve() == args.report.resolve():
             parser.error("CSV e relatório devem ter caminhos diferentes.")
 
+    if args.issues_output is not None:
+        protected_paths = [
+            args.csv_path,
+            args.output,
+            args.report,
+        ]
+
+        for path in protected_paths:
+            if path is not None:
+                if args.issues_output.resolve() == path.resolve():
+                    parser.error(
+                        "O arquivo de problemas deve ter um caminho "
+                        "diferente da fonte, do CSV e do relatório."
+                    )
+
+        if args.issues_output.exists():
+            parser.error("O arquivo de problemas já existe.")
+
     total_rows = 0
     total_chunks = 0
     selected_rows = 0
     date_issues = Counter()
+    calendar_issues = Counter()
+    issue_parts = []
 
     for chunk in read_srag_chunks(
         args.csv_path,
@@ -83,8 +123,12 @@ def main() -> None:
         selected = filter_by_residence(chunk, args.uf)
         selected_rows += len(selected)
 
-        _, chunk_issues = validate_dates(selected)
+        validated, chunk_issues = validate_dates(selected)
         date_issues.update(chunk_issues)
+
+        transformed = add_epidemiological_week_2026(validated)
+        issue_parts.append(collect_record_issues(transformed))
+        calendar_issues.update(validate_calendar(transformed))
 
     print(f"Arquivo: {args.csv_path.name}")
     print(f"Blocos lidos: {total_chunks}")
@@ -112,18 +156,78 @@ def main() -> None:
 
         print("Contagem de UF confirmada")
 
+
     print("\nValidação das datas:")
 
     for issue, quantity in sorted(date_issues.items()):
         print(f"{issue}: {quantity}")
 
+    export_result = None
+
+    if args.output is not None:
+        exported_rows = export_srag_csv(
+            source_path=args.csv_path,
+            output_path=args.output,
+            uf=args.uf,
+            chunk_size=args.chunk_size,
+            expected_rows=selected_rows,
+        )
+
+        export_result = {
+            "status": "completed",
+            "output_file": args.output.name,
+            "exported_rows": exported_rows,
+            "output_size_bytes": args.output.stat().st_size,
+            "derived_columns": [
+                "DT_SIN_PRI_PARSED",
+                "DT_NOTIFIC_PARSED",
+                "EPI_YEAR_CALCULATED",
+                "EPI_WEEK_CALCULATED",
+                "RESIDENCE_UF_NORMALIZED",
+            ],
+        }
+
+        print(f"CSV salvo: {args.output}")
+        print(f"Linhas exportadas: {exported_rows}")
+
+    record_issues = (
+        pd.concat(issue_parts, ignore_index=True)
+        if issue_parts
+        else pd.DataFrame(columns=[
+            "source_record_number",
+            "field",
+            "issue_code",
+        ])
+    )
+    
+    issues_result = {
+        "occurrences": len(record_issues),
+        "affected_records": int(
+            record_issues["source_record_number"].nunique()
+        ),
+        "by_code": {
+            str(code): int(quantity)
+            for code, quantity in
+            record_issues["issue_code"].value_counts().items()
+        },
+        "output_file": None,
+        "records_removed": 0,
+    }
+
+    if args.issues_output is not None:
+        args.issues_output.parent.mkdir(parents=True, exist_ok=True)
+
+        record_issues.to_csv(
+            args.issues_output,
+            sep=";",
+            index=False,
+            encoding="utf-8",
+        )
+
+        issues_result["output_file"] = args.issues_output.name
+        print(f"Problemas registrados: {args.issues_output}")
+
     if args.report is not None:
-        if args.report.resolve() == args.csv_path.resolve():
-            raise SystemExit(
-                "O relatório não pode substituir o arquivo original."
-            )
-
-
         report = {
             "executed_at": datetime.now(timezone.utc).isoformat(),
             "source_file": args.csv_path.name,
@@ -135,6 +239,19 @@ def main() -> None:
             "expected_rows": args.expected_rows,
             "expected_selected_rows": args.expected_selected_rows,
             "date_validation": dict(date_issues),
+            "calendar_validation": dict(calendar_issues),
+            "calendar_transformation": {
+                "calendar_year": 2026,
+                "first_week_start": "2026-01-04",
+                "calendar_end_exclusive": "2027-01-03",
+                "reference": (
+                    "https://portalsinan.saude.gov.br/"
+                    "calendario-epidemiologico"
+                ),
+                "original_sem_pri_preserved": True,
+            },
+            "record_issues": issues_result,
+            "export": export_result,
         }
 
         args.report.parent.mkdir(parents=True, exist_ok=True)
@@ -144,20 +261,7 @@ def main() -> None:
             encoding="utf-8",
         )
 
-        print(f"\nRelatório salvo: {args.report}")
-
-
-    if args.output is not None:
-        exported_rows = export_srag_csv(
-            source_path=args.csv_path,
-            output_path=args.output,
-            uf=args.uf,
-            chunk_size=args.chunk_size,
-            expected_rows=selected_rows,
-        )
-
-        print(f"CSV salvo: {args.output}")
-        print(f"Linhas exportadas: {exported_rows}")
+        print(f"Relatório salvo: {args.report}")
 
 if __name__ == "__main__":
     main()

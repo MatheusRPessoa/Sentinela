@@ -8,6 +8,13 @@ def add_epidemiological_week_2026(
 ) -> pd.DataFrame:
     transformed = records.copy()
 
+    transformed["RESIDENCE_UF_NORMALIZED"] = (
+        transformed["SG_UF"]
+        .str.strip()
+        .str.upper()
+        .replace("", pd.NA)
+    )
+
     symptom_dates = transformed["DT_SIN_PRI_PARSED"].dt.normalize()
 
     in_calendar = (
