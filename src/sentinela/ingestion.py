@@ -48,3 +48,15 @@ def read_srag_chunks(
         usecols=REQUIRED_COLUMNS,
         chunksize=chunk_size,
     )
+
+def filter_by_residence(
+    records: pd.DataFrame,
+    uf: str,
+) -> pd.DataFrame:
+    """Seleciona registros pela UF de residência."""
+    normalized_uf = uf.strip().upper()
+
+    residence_uf = records["SG_UF"].str.strip().str.upper()
+    mask = residence_uf.eq(normalized_uf).fillna(False)
+
+    return records.loc[mask].copy()
