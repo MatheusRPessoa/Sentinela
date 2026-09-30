@@ -59,7 +59,7 @@ Os CSVs locais não são versionados no Git.
 Para a versão avaliada, execute em uma única linha:
 
 ```bash
-python3 scripts/import_srag.py data/raw/INFLUD26-28-09-2026.csv --uf MG --expected-rows 220941 --expected-selected-rows 29087 --report data/processed/srag_2026_mg_calendar_report.json --output data/processed/srag_2026_mg_calendar.csv
+python3 scripts/import_srag.py data/raw/INFLUD26-28-09-2026.csv --uf MG --expected-rows 220941 --expected-selected-rows 29087 --report data/processed/srag_2026_mg_calendar_report.json --output data/processed/srag_2026_mg_calendar.csv --issues-output data/processed/srag_2026_mg_issues.csv
 ```
 
 As contagens esperadas são específicas dessa versão.
@@ -70,13 +70,33 @@ esses argumentos.
 
 - CSV dos registros selecionados, com datas convertidas
   e campos de calendário calculados.
-- Relatório JSON com contagens e validação das datas.
+- Relatório JSON com contagens, validação das datas e do calendário,
+  resumo dos problemas e resultado da exportação, quando solicitada.
+- CSV opcional de problemas, definido por `--issues-output`, com
+  separador ponto e vírgula e codificação UTF-8.
 
-O relatório ainda não inclui detalhes da transformação
-do calendário nem a confirmação da exportação.
+O CSV de problemas contém uma linha por ocorrência nos registros
+selecionados pela UF de residência. Suas colunas são:
 
-O CSV de destino não pode existir antes da execução.
-Para repetir o processamento, escolha outro nome de saída.
+- `source_record_number`: posição do registro no CSV original,
+  começando em 1 e sem contar o cabeçalho.
+- `field`: campo relacionado ao problema.
+- `issue_code`: código do problema identificado.
+
+São registrados problemas de datas ausentes ou inválidas,
+notificação anterior aos sintomas e início dos sintomas fora
+do calendário de 2026. A divergência entre `SEM_PRI` e a semana
+calculada é contabilizada no relatório JSON.
+
+Um registro pode ter mais de uma ocorrência. Nenhum registro é
+removido por essas verificações. Se não houver problemas, o CSV
+contém apenas o cabeçalho. Sem `--issues-output`, o resumo dos
+problemas continua disponível no JSON solicitado por `--report`.
+
+Os CSVs de registros e de problemas não podem existir antes da
+execução. O caminho de `--issues-output` deve ser diferente da
+fonte, do CSV de registros e do relatório JSON. Para repetir o
+processamento, escolha novos nomes para os CSVs de saída.
 
 ## Verificações da versão avaliada
 

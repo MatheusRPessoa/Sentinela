@@ -146,3 +146,41 @@ para gerar alertas epidemiológicos.
 - Definir critérios de inclusão com documentação oficial.
 - Avaliar o intervalo máximo de 160 dias.
 - Avaliar compatibilidade e comparabilidade dos anos históricos.
+
+## Validação do calendário no processamento
+
+A rotina reutilizável reproduziu os resultados da exploração:
+
+- 29.087 linhas verificadas.
+- Nenhuma semana calculada ausente.
+- Nenhuma semana original ausente ou inválida.
+- Todas as linhas comparáveis.
+- Diferença de +1 em SEM_PRI nas 29.087 linhas.
+- Nenhuma outra diferença encontrada.
+
+Os indicadores foram registrados no relatório JSON e conferidos
+no notebook exploracao_srag_2026.ipynb.
+
+A divergência permanece documentada, com o campo original preservado.
+
+## Registro de problemas no processamento
+
+O processamento gera um CSV com:
+- Posição do registro na fonte.
+- Campo relacionado.
+- Código do problema identificado.
+
+Regras implementadas:
+- Data ausente.
+- Data não convertível.
+- Notificação anterior ao início dos sintomas.
+- Data de início dos sintomas fora do calendário de 2026.
+
+Na versão avaliada, foram verificadas 29.087 linhas de MG,
+sem ocorrências nessas regras.
+
+O CSV de problemas foi gerado com cabeçalho e sem registros.
+O relatório JSON confirmou zero ocorrências e zero remoções.
+
+Essa verificação não cobre todos os possíveis problemas
+de qualidade epidemiológica.
