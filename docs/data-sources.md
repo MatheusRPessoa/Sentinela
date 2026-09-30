@@ -223,3 +223,16 @@ mas não encerra as pendências sobre:
 - Comparabilidade dos anos históricos.
 
 As respostas do responsável poderão exigir ajustes no projeto.
+
+## Registro da coleta inicial
+
+- Fonte: Ministério da Saúde — SIVEP-Gripe.
+- Arquivo: INFLUD26-28-09-2026.csv.
+- Versão publicada: 28/09/2026.
+- Data do download: 30/09/2026.
+- Método: download manual pelo Portal de Dados Abertos do SUS.
+- Local no projeto: data/raw/INFLUD26-28-09-2026.csv.
+- Arquivo original preservado sem alterações.
+
+Página do recurso:
+https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026/resource/74091efc-3f75-42e8-a6fa-6b79a8d30582

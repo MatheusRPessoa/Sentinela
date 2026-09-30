@@ -3,3 +3,4 @@ __pycache__/
 .ipynb_checkpoints/
 data/raw/
 data/processed/
+*.egg-info/
