@@ -144,3 +144,63 @@ fonte não corresponde à convenção de semana utilizada pela série validada.
 Os sete anos são preservados e a mediana é utilizada para reduzir a
 influência de valores extremos. A composição do período histórico poderá
 ser reavaliada posteriormente.
+
+
+## Avaliação histórica da regra V1
+
+A regra V1 foi avaliada retrospectivamente utilizando 2024 e 2025,
+sempre construindo a referência histórica apenas com anos anteriores
+ao ano avaliado.
+
+Os eventos de referência foram definidos a partir de evidências externas
+do InfoGripe, independentemente dos sinais produzidos pelo Sentinela.
+
+### Avaliação por evento
+
+Foram avaliados dois eventos externos:
+
+- 2024: evento iniciado na SE 15; não detectado pela V1;
+- 2025: evento iniciado na SE 14; primeiro sinal na SE 17.
+
+O evento de 2025 apresentou atraso de três semanas em relação ao início
+externo documentado.
+
+Um dos dois eventos foi detectado. Essa proporção é apenas descritiva
+do pequeno conjunto avaliado e não constitui estimativa robusta de
+sensibilidade.
+
+### Avaliação por pontos externos
+
+Foram utilizados oito pontos com classificação externa explícita:
+
+- 5 `EVENT`;
+- 3 `NO_EVENT`.
+
+Resultados:
+
+- verdadeiro positivo: 1;
+- falso positivo: 0;
+- verdadeiro negativo: 3;
+- falso negativo: 4.
+
+Não houve falso alerta nos três pontos negativos avaliados.
+
+Esse resultado não implica taxa geral de falsos alertas igual a zero,
+pois o número de pontos negativos é pequeno e semanas sem evidência
+externa suficiente foram excluídas.
+
+### Limitações
+
+Os pontos externos não representam eventos epidemiológicos independentes:
+várias semanas podem pertencer ao mesmo episódio.
+
+Por esse motivo, a avaliação por evento é utilizada para analisar
+detecção e atraso, enquanto a avaliação por pontos é complementar.
+
+Os eventos e pontos de referência representam evidências externas de
+atividade/crescimento de SRAG segundo o critério adotado. Um `SIGNAL`
+do Sentinela é um sinal estatístico e não constitui confirmação de surto.
+
+Os resultados de 2024 e 2025 não devem ser utilizados para reajustar
+a regra V1 e simultaneamente continuar sendo tratados como avaliação
+independente.
