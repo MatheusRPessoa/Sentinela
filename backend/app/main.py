@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from backend.app.api.routes.trends import router as trends_router
 from backend.app.api.routes.signals import router as signals_router
 from backend.app.api.routes.metadata import router as metadata_router
+from backend.app.api.routes.options import router as options_router
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -14,6 +16,7 @@ app = FastAPI(
 app.include_router(trends_router)
 app.include_router(signals_router)
 app.include_router(metadata_router)
+app.include_router(options_router)
 
 @app.get("/health")
 def health_check():
