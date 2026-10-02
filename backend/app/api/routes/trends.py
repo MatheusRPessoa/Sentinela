@@ -1,12 +1,19 @@
 from fastapi import APIRouter, HTTPException, Query
 
+from backend.app.repositories.epidemiological import (
+    EpidemiologicalRepository,
+)
 from backend.app.schemas.trend import TrendResponse
-from backend.app.services.trends import get_trends
+from backend.app.services.trends import TrendsService
+
 
 router = APIRouter(
     prefix="/api/trends",
     tags=["trends"],
 )
+
+repository = EpidemiologicalRepository()
+service = TrendsService(repository)
 
 
 @router.get("", response_model=TrendResponse)
@@ -17,7 +24,7 @@ def read_trends(
     normalized_region = region.strip().upper()
 
     try:
-        weeks = get_trends(
+        weeks = service.get_trends(
             region=normalized_region,
             year=year,
         )
@@ -26,7 +33,7 @@ def read_trends(
             status_code=500,
             detail=str(exc),
         ) from exc
-    
+
     if not weeks:
         raise HTTPException(
             status_code=404,
@@ -35,7 +42,7 @@ def read_trends(
                 f"{normalized_region}/{year}."
             ),
         )
-    
+
     return TrendResponse(
         region=normalized_region,
         year=year,

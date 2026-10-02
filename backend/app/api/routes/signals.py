@@ -1,12 +1,18 @@
 from fastapi import APIRouter, HTTPException, Query
 
+from backend.app.repositories.epidemiological import (
+    EpidemiologicalRepository,
+)
 from backend.app.schemas.signal import SignalResponse
-from backend.app.services.signals import get_signals
+from backend.app.services.signals import SignalsService
 
 router = APIRouter(
     prefix="/api/signals",
     tags=["signals"],
 )
+
+repository = EpidemiologicalRepository()
+service = SignalsService(repository)
 
 @router.get("", response_model=SignalResponse)
 def read_signals(
@@ -16,7 +22,7 @@ def read_signals(
     normalized_region = region.strip().upper()
 
     try:
-        signals = get_signals(
+        signals = service.get_signals(
             region=normalized_region,
             year=year,
         )
@@ -29,5 +35,5 @@ def read_signals(
     return SignalResponse(
         region=normalized_region,
         year=year,
-        signals=signals, 
+        signals=signals,
     )

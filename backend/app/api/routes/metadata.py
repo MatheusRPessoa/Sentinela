@@ -1,13 +1,19 @@
 from fastapi import APIRouter, HTTPException, Query
 
+from backend.app.repositories.epidemiological import (
+    EpidemiologicalRepository,
+)
 from backend.app.schemas.metadata import MetadataResponse
-from backend.app.services.metadata import get_metadata
+from backend.app.services.metadata import MetadataService
 
 
 router = APIRouter(
     prefix="/api/metadata",
     tags=["metadata"],
 )
+
+repository = EpidemiologicalRepository()
+service = MetadataService(repository)
 
 @router.get("", response_model=MetadataResponse)
 def read_metadata(
@@ -17,7 +23,7 @@ def read_metadata(
     normalized_region = region.strip().upper()
 
     try:
-       metadata = get_metadata(
+        metadata = service.get_metadata(
             region=normalized_region,
             year=year,
        )
@@ -27,7 +33,7 @@ def read_metadata(
             detail=str(exc),
         ) from exc
 
-    if metadata is None:
+    if not metadata:
         raise HTTPException(
             status_code=404,
             detail=(
@@ -35,4 +41,4 @@ def read_metadata(
                 f"{normalized_region}/{year}."
             ),
         )
-    return metadata
+    return MetadataResponse(**metadata)
