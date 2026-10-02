@@ -1,17 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { apiGet } from "./services/api";
 import type {
   MetadataResponse,
   SignalResponse,
   TrendResponse,
+  OptionsResponse,
 } from "./types/api";
+
+import {
+  DashboardLoading,
+  DashboardState,
+} from "./components/dashboard-state";
 
 import { TrendChart } from "./components/trend-chart";
 
 function App() {
-  const region = "MG"
-  const year = 2026;
+
+  const [region, setRegion] = useState("MG");
+  const [year, setYear] = useState(2026);
+
+  const optionsQuery = useQuery({
+    queryKey: ["options"],
+    queryFn: () =>
+      apiGet<OptionsResponse>("/api/options")
+  });
 
   const metadataQuery = useQuery({
     queryKey: ["metadata", region, year],
@@ -41,54 +55,109 @@ function App() {
   });
 
   if (
+    optionsQuery.isPending ||
     metadataQuery.isPending ||
     trendsQuery.isPending ||
     signalsQuery.isPending
   ) {
-    return (
-      <main className="dashboard">
-        <p>Carregando dados...</p>
-      </main>
-    );
+    return <DashboardLoading />;
   }
 
   if (
+    optionsQuery.isError ||
     metadataQuery.isError ||
     trendsQuery.isError ||
     signalsQuery.isError
   ) {
+    const handleRetry = () => {
+      void Promise.all([
+        optionsQuery.refetch(),
+        metadataQuery.refetch(),
+        trendsQuery.refetch(),
+        signalsQuery.refetch(),
+      ]);
+    };
+
     return (
       <main className="dashboard">
-        <p>Não foi possível carregar os dados.</p>
+        <DashboardState
+          title="Não foi possível carregar o painel"
+          description="Ocorreu um problema ao consultar os dados. Verifique a conexão e tente novamente."
+          action={{
+            label:"tentar novamente",
+            onClick: handleRetry 
+          }}
+        />
       </main>
-    );
+    )
   }
 
+  const options = optionsQuery.data;
   const metadata = metadataQuery.data;
   const trends = trendsQuery.data;
   const signals = signalsQuery.data;
+
+  if (trends.weeks.length ===0) {
+    return (
+      <main className="dashboard">
+        <DashboardState 
+          title="Nenhum dado disponivel"
+          description={`Não há observações disponíveis para ${region} em ${year}.`}
+        />
+      </main>
+    );
+  }
 
   const totalRecords = trends.weeks.reduce(
     (total, week) => total + week.record_count,
     0,
   );
 
+  const selectedRegion = options.regions.find(
+    (option) => option.value === region,
+  );
+
+  function formatDateTime(value: string) {
+    return new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(new Date(value));
+  }
+
+  function formatDate(value: string) {
+    const [year, month, day] = value.split("-")
+
+    return `${day}/${month}/${year}`
+  }
+
   return (
-    <main className="dashboard">
+    <main
+      className="dashboard"
+      aria-labelledby="page-title"
+    >
       <header className="page-header">
         <div>
           <p className="eyebrow">Vigilância epidemiológica</p>
-          <h1>Sentinela</h1>
+          <h1 id="page-title">Sentinela</h1>
           <p className="subtitle">
-            Monitoramento de SRAG em Minas Gerais
+            Monitoramento de SRAG em{" "}
+            {selectedRegion?.label ?? region}
           </p>
         </div>
 
         <div className="source">
           <span>Fonte</span>
+
           <strong>{metadata.source}</strong>
+
           <small>
-            Dados observados até {metadata.observed_through}
+            Atualizado em{" "}
+            {formatDateTime(metadata.source_updated_at)}
+          </small>
+
+          <small>
+            Dados observados até{" "}
+            {formatDate(metadata.observed_through)}
           </small>
         </div>
       </header>
@@ -97,19 +166,51 @@ function App() {
         className="filters"
         aria-label="Filtros do painel"
       >
-        <label>
-          Região
-          <select value={region} disabled>
-            <option value="MG">Minas Gerais</option>
-          </select>
-        </label>
+        <div className="filter-field">
+          <label htmlFor="region-filter">
+            Região
+          </label>
 
-        <label>
-          Ano
-          <select value={year} disabled>
-            <option value={2026}>2026</option>
+          <select
+            id="region-filter"
+            value={region}
+            onChange={(event) => {
+              setRegion(event.target.value);
+            }}
+          >
+            {options.regions.map((option) => (
+              <option
+                key={option.value}
+                value={option.value}
+              >
+                {option.label}
+              </option>
+            ))}
           </select>
-        </label>
+        </div>
+
+        <div className="filter-field">
+          <label htmlFor="year-filter">
+            Ano
+          </label>
+
+          <select
+            id="year-filter"
+            value={year}
+            onChange={(event) => {
+              setYear(Number(event.target.value));
+            }}
+          >
+            {options.years.map((option) => (
+              <option
+                key={option}
+                value={option}
+              >
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
       </section>
 
       <section
@@ -119,7 +220,7 @@ function App() {
         <article className="card">
           <span>Registros observados</span>
           <strong>{totalRecords.toLocaleString("pt-BR")}</strong>
-          <small>SRAG em residentes de MG</small>
+          <small>SRAG em residentes de {region}</small>
         </article>
 
         <article className="card">
@@ -152,14 +253,15 @@ function App() {
 
         <TrendChart 
           data={trends.weeks}
-          signals={signals.signals} 
+          signals={signals.signals}
+          year={year} 
         />
       </section>
 
       <section
-        id="signals" 
+        id="signals"
         className="panel"
-        aria-label="signals-title"
+        aria-labelledby="signals-title"
       >
         <div className="panel-heading">
             <div>

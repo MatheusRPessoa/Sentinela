@@ -18,6 +18,7 @@ import type {
 interface TrendChartProps {
   data: TrendWeek[];
   signals: Signal[];
+  year: number;
 }
 
 interface ChartData extends TrendWeek {
@@ -27,6 +28,7 @@ interface ChartData extends TrendWeek {
 interface CustomTooltipProps {
   active?: boolean;
   label?: number | string;
+  year: number;
   payload?: Array<{
     payload: ChartData;
   }>;
@@ -35,6 +37,7 @@ interface CustomTooltipProps {
 function CustomTooltip({
   active,
   label,
+  year,
   payload,
 }: CustomTooltipProps) {
   if (!active || !payload?.length) {
@@ -54,7 +57,7 @@ function CustomTooltip({
 
       <dl>
         <div>
-          <dt>2026</dt>
+          <dt>{year}</dt>
           <dd>{formatNumber(data.record_count)}</dd>
         </div>
 
@@ -77,7 +80,7 @@ function CustomTooltip({
   );
 }
 
-export function TrendChart({ data, signals }: TrendChartProps) {
+export function TrendChart({ data, signals, year }: TrendChartProps) {
     const chartData: ChartData[] = data.map((week) => ({
         ...week,
         historical_range: week.q75 - week.q25,
@@ -113,7 +116,7 @@ export function TrendChart({ data, signals }: TrendChartProps) {
                         width={60}
                     />
 
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={<CustomTooltip year={year}/>} />
 
                     {signals.map((signal) => (
                         <ReferenceLine
@@ -164,7 +167,7 @@ export function TrendChart({ data, signals }: TrendChartProps) {
                     <Line
                         type="monotone"
                         dataKey="record_count"
-                        name="2026"
+                        name={String(year)}
                         stroke="#f97316"
                         strokeWidth={3}
                         dot={false}
@@ -174,7 +177,7 @@ export function TrendChart({ data, signals }: TrendChartProps) {
                     <Line
                         type="monotone"
                         dataKey="record_count"
-                        name="2026"
+                        name={String(year)}
                         stroke="#f97316"
                         strokeWidth={3}
                         dot={(props) => {
@@ -210,7 +213,7 @@ export function TrendChart({ data, signals }: TrendChartProps) {
                 >
                 <span>
                     <i className="legend-line legend-observed" />
-                    2026
+                    {year}
                 </span>
 
                 <span>

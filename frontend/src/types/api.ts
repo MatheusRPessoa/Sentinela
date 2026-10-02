@@ -44,3 +44,13 @@ export interface MetadataResponse {
   observed_weeks: number;
   limitations: string[];
 }
+
+export interface RegionOption {
+  value: string;
+  label: string;
+}
+
+export interface OptionsResponse {
+  regions: RegionOption[];
+  years: number[];
+}

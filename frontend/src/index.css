@@ -77,12 +77,9 @@ input {
 
 .filters {
   display: flex;
+  align-items: flex-end;
   gap: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
-  background: white;
-  border: 1px solid #e4e7ec;
-  border-radius: 12px;
+  padding: 22px;
 }
 
 .filters label {
@@ -101,6 +98,43 @@ input {
   background: white;
   border: 1px solid #d0d5dd;
   border-radius: 8px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 208px;
+}
+
+.filter-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #344054;
+}
+
+.filter-field select {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+
+  color: #101828;
+  font: inherit;
+
+  cursor: pointer;
+}
+
+.filter-field select:hover {
+  border-color: #98a2b3;
+}
+
+.filter-field select:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
 }
 
 .indicators {
@@ -122,6 +156,7 @@ input {
   flex-direction: column;
   gap: 8px;
   padding: 22px;
+  margin: 5px;
 }
 
 .card span {
@@ -342,6 +377,118 @@ input {
   color: #667085;
 }
 
+.dashboard-state {
+  max-width: 520px;
+  margin: 120px auto;
+  padding: 32px;
+  text-align: center;
+  background: white;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+}
+
+.dashboard-state h2 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+}
+
+.dashboard-state p {
+  margin: 0;
+  color: #667085;
+  line-height: 1.6;
+}
+
+.dashboard-state button {
+  margin-top: 20px;
+  padding: 10px 16px;
+  color: white;
+  background: #2563eb;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dashboard-state button:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+.skeleton {
+  background: #e4e7ec;
+  border-radius: 8px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.loading-header {
+  margin-bottom: 32px;
+}
+
+.skeleton-title {
+  width: 180px;
+  height: 38px;
+}
+
+.skeleton-subtitle {
+  width: 300px;
+  height: 18px;
+  margin-top: 12px;
+}
+
+.loading-filters {
+  height: 90px;
+  margin-bottom: 24px;
+}
+
+.loading-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.loading-card {
+  height: 125px;
+}
+
+.loading-chart {
+  height: 440px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .loading-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 760px) {
   .dashboard {
     width: min(100% - 28px, 1180px);
@@ -370,5 +517,16 @@ input {
 
   .signal-values {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-field {
+    width: 100%;
   }
 }
