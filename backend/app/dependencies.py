@@ -8,6 +8,7 @@ from backend.app.repositories.epidemiological import (
 from backend.app.services.metadata import MetadataService
 from backend.app.services.signals import SignalsService
 from backend.app.services.trends import TrendsService
+from backend.app.services.options import OptionsService
 
 
 def get_epidemiological_repository() -> EpidemiologicalRepository:
@@ -37,6 +38,16 @@ def get_metadata_service(
 ) -> MetadataService:
     return MetadataService(repository)
 
+def get_options_service(
+    repository: RepositoryDep,
+) -> OptionsService:
+    return OptionsService(repository)
+
+
+OptionsServiceDep = Annotated[
+    OptionsService,
+    Depends(get_options_service),
+]
 
 TrendsServiceDep = Annotated[
     TrendsService,

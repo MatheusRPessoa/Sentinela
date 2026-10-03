@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from backend.app.schemas.options import OptionsResponse
-from backend.app.services.options import get_available_options
+from backend.app.dependencies import OptionsServiceDep
 
 router = APIRouter(
     prefix="/api/options",
@@ -9,5 +9,9 @@ router = APIRouter(
 )
 
 @router.get("", response_model=OptionsResponse)
-def read_options():
-    return get_available_options()
+def read_options(
+    service: OptionsServiceDep,
+):
+    options = service.get_options()
+
+    return OptionsResponse(**options)

@@ -1,10 +1,48 @@
-def get_available_options() -> dict:
-    return {
-        "regions": [
+from backend.app.repositories.epidemiological import (
+    EpidemiologicalRepository,
+)
+
+
+REGION_LABELS = {
+    "MG": "Minas Gerais",
+}
+
+
+class OptionsService:
+    def __init__(
+        self,
+        repository: EpidemiologicalRepository,
+    ):
+        self.repository = repository
+
+    def get_options(self) -> dict:
+        datasets = self.repository.get_available_datasets()
+
+        regions = sorted(
             {
-                "value": "MG",
-                "label": "Minas Gerais", 
+                region
+                for region, _ in datasets
             }
-        ],
-        "years": [2026],
-    }
+        )
+
+        years = sorted(
+            {
+                year
+                for _, year in datasets
+            },
+            reverse=True,
+        )
+
+        return {
+            "regions": [
+                {
+                    "value": region,
+                    "label": REGION_LABELS.get(
+                        region,
+                        region,
+                    )
+                }
+                for region in regions
+            ],
+            "years": years,
+        }
