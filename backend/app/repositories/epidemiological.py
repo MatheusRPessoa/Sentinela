@@ -78,3 +78,56 @@ class EpidemiologicalRepository:
             )
 
         return pd.read_csv(path, sep=";")
+
+    def get_available_datasets(
+        self,
+    ) -> list[tuple[str, int]]:
+        pattern = "srag_*_*_signal_evaluation.csv"
+
+        datasets: list[tuple[str, int]] = []
+
+        for path in PROCESSED_DATA_DIR.glob(pattern):
+            parts = path.stem.split("_")
+
+            if len(parts) < 5:
+                continue
+
+            try:
+                year = int(parts[1])
+            except ValueError:
+                continue
+
+            region = parts[2].upper()
+
+
+            weekly_path = (
+                PROCESSED_DATA_DIR
+                / f"srag_{year}_{region.lower()}_weekly.csv"
+            )
+
+            coverage_path = (
+                PROCESSED_DATA_DIR
+                / f"srag_{year}_{region.lower()}_weekly_coverage.csv"
+            )
+
+            if not weekly_path.exists():
+                continue
+
+            if not coverage_path.exists():
+                continue
+
+            datasets.append((region, year))
+
+        return sorted(set(datasets))
+
+    def dataset_exists(
+        self,
+        region: str,
+        year: int,
+    ) -> bool:
+        region = region.strip().upper()
+
+        return (
+            region,
+            year,
+        ) in self.get_available_datasets()
