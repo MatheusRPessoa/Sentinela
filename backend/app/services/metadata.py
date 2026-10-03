@@ -22,7 +22,10 @@ class MetadataService:
     ) -> dict:
         region = region.strip().upper()
 
-        if region != "MG" or year != 2026:
+        if not self.repository.dataset_exists(
+            region=region,
+            year=year,
+        ):
             return {}
 
         coverage = self.repository.get_coverage(
@@ -48,7 +51,14 @@ class MetadataService:
                 f"{sorted(missing_columns)}"
             )
 
-        coverage = coverage.loc[coverage["epi_year"].eq(year)].copy()
+        coverage = coverage.loc[
+            coverage["epi_year"].eq(year)
+        ].copy()
+
+        if coverage["epi_week"].duplicated().any():
+            raise ValueError(
+                "A cobertura contém semanas epidemiológicas duplicadas."
+            )
 
         observed = coverage.loc[
             coverage["data_status"].eq("observado")
@@ -59,12 +69,12 @@ class MetadataService:
                 "Nenhuma semana observada encontrada."
             )
 
+        observed = observed.sort_values("epi_week")
+
         if coverage["epi_week"].duplicated().any():
             raise ValueError(
                 "A cobertura contém semanas epidemiológicas duplicadas."
         )
-
-        observed = observed.sort_values("epi_week")
 
         last_observed = observed.iloc[-1]
 

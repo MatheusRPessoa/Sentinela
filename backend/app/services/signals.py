@@ -17,7 +17,10 @@ class SignalsService:
     ) -> list[dict]:
         region = region.strip().upper()
 
-        if region != "MG" or year != 2026:
+        if not self.repository.dataset_exists(
+            region=region,
+            year=year,
+        ):
             return []
 
         df = self.repository.get_signal_evaluation(

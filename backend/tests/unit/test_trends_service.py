@@ -5,6 +5,14 @@ from backend.app.services.trends import TrendsService
 
 
 class FakeEpidemiologicalRepository:
+    def dataset_exists(
+        self,
+        region: str,
+        year: int
+    ) -> bool:
+        _ = region, year
+        return True
+
     def get_weekly(
         self,
         region: str,

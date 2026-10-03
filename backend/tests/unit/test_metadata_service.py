@@ -5,6 +5,14 @@ from backend.app.services.metadata import MetadataService
 
 
 class FakeEpidemiologicalRepository:
+    def dataset_exists(
+        self,
+        region: str,
+        year: int
+    ) -> bool:
+        _ = region, year
+        return True
+
     def get_coverage(
         self,
         region: str,

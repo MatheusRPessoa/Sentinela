@@ -4,6 +4,14 @@ from backend.app.services.signals import SignalsService
 
 
 class FakeEpidemiologicalRepository:
+    def dataset_exists(
+        self,
+        region: str,
+        year: int
+    ) -> bool:
+        _ = region, year
+        return True
+
     def get_signal_evaluation(
         self,
         region: str,
