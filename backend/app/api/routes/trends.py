@@ -1,23 +1,16 @@
 from fastapi import APIRouter, HTTPException, Query
 
-from backend.app.repositories.epidemiological import (
-    EpidemiologicalRepository,
-)
 from backend.app.schemas.trend import TrendResponse
-from backend.app.services.trends import TrendsService
-
+from backend.app.dependencies import TrendsServiceDep
 
 router = APIRouter(
     prefix="/api/trends",
     tags=["trends"],
 )
 
-repository = EpidemiologicalRepository()
-service = TrendsService(repository)
-
-
 @router.get("", response_model=TrendResponse)
 def read_trends(
+    service: TrendsServiceDep,
     region: str = Query(..., min_length=2, max_length=2),
     year: int = Query(..., ge=2019, le=2100),
 ):

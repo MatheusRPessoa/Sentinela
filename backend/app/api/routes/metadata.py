@@ -1,22 +1,16 @@
 from fastapi import APIRouter, HTTPException, Query
 
-from backend.app.repositories.epidemiological import (
-    EpidemiologicalRepository,
-)
 from backend.app.schemas.metadata import MetadataResponse
-from backend.app.services.metadata import MetadataService
-
+from backend.app.dependencies import MetadataServiceDep
 
 router = APIRouter(
     prefix="/api/metadata",
     tags=["metadata"],
 )
 
-repository = EpidemiologicalRepository()
-service = MetadataService(repository)
-
 @router.get("", response_model=MetadataResponse)
 def read_metadata(
+    service: MetadataServiceDep,
     region: str = Query(..., min_length=2, max_length=2),
     year: int = Query(..., ge=2019, le=2100),
 ):

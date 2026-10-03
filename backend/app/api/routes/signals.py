@@ -1,21 +1,16 @@
 from fastapi import APIRouter, HTTPException, Query
 
-from backend.app.repositories.epidemiological import (
-    EpidemiologicalRepository,
-)
 from backend.app.schemas.signal import SignalResponse
-from backend.app.services.signals import SignalsService
+from backend.app.dependencies import SignalsServiceDep
 
 router = APIRouter(
     prefix="/api/signals",
     tags=["signals"],
 )
 
-repository = EpidemiologicalRepository()
-service = SignalsService(repository)
-
 @router.get("", response_model=SignalResponse)
 def read_signals(
+    service: SignalsServiceDep,
     region: str = Query(..., min_length=2, max_length=2),
     year: int = Query(..., ge=2019, le=2100),
 ):
