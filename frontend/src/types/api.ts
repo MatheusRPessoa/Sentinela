@@ -48,9 +48,9 @@ export interface MetadataResponse {
 export interface RegionOption {
   value: string;
   label: string;
+  years: number[];
 }
 
 export interface OptionsResponse {
   regions: RegionOption[];
-  years: number[];
 }

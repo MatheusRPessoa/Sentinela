@@ -1,31 +1,44 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { DashboardLoading, DashboardState } from "./components/dashboard-state";
+import { TrendChart } from "./components/trend-chart";
 import { apiGet } from "./services/api";
+
 import type {
   MetadataResponse,
+  OptionsResponse,
   SignalResponse,
   TrendResponse,
-  OptionsResponse,
 } from "./types/api";
 
-import {
-  DashboardLoading,
-  DashboardState,
-} from "./components/dashboard-state";
+interface DashboardProps {
+  options: OptionsResponse;
+}
 
-import { TrendChart } from "./components/trend-chart";
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
 
-function App() {
+function formatDate(value: string) {
+  const [year, month, day] = value.split("-");
 
-  const [region, setRegion] = useState("MG");
-  const [year, setYear] = useState(2026);
+  return `${day}/${month}/${year}`;
+}
 
-  const optionsQuery = useQuery({
-    queryKey: ["options"],
-    queryFn: () =>
-      apiGet<OptionsResponse>("/api/options")
-  });
+function Dashboard({ options }: DashboardProps) {
+  const [region, setRegion] = useState(
+    () => options.regions[0].value,
+  );
+
+  const initialRegion = options.regions[0];
+
+  const [year, setYear] = useState(
+    () => initialRegion.years[0],
+  );
 
   const metadataQuery = useQuery({
     queryKey: ["metadata", region, year],
@@ -55,7 +68,6 @@ function App() {
   });
 
   if (
-    optionsQuery.isPending ||
     metadataQuery.isPending ||
     trendsQuery.isPending ||
     signalsQuery.isPending
@@ -64,14 +76,12 @@ function App() {
   }
 
   if (
-    optionsQuery.isError ||
     metadataQuery.isError ||
     trendsQuery.isError ||
     signalsQuery.isError
   ) {
     const handleRetry = () => {
       void Promise.all([
-        optionsQuery.refetch(),
         metadataQuery.refetch(),
         trendsQuery.refetch(),
         signalsQuery.refetch(),
@@ -84,24 +94,23 @@ function App() {
           title="Não foi possível carregar o painel"
           description="Ocorreu um problema ao consultar os dados. Verifique a conexão e tente novamente."
           action={{
-            label:"tentar novamente",
-            onClick: handleRetry 
+            label: "Tentar novamente",
+            onClick: handleRetry,
           }}
         />
       </main>
-    )
+    );
   }
 
-  const options = optionsQuery.data;
   const metadata = metadataQuery.data;
   const trends = trendsQuery.data;
   const signals = signalsQuery.data;
 
-  if (trends.weeks.length ===0) {
+  if (trends.weeks.length === 0) {
     return (
       <main className="dashboard">
-        <DashboardState 
-          title="Nenhum dado disponivel"
+        <DashboardState
+          title="Nenhum dado disponível"
           description={`Não há observações disponíveis para ${region} em ${year}.`}
         />
       </main>
@@ -117,19 +126,6 @@ function App() {
     (option) => option.value === region,
   );
 
-  function formatDateTime(value: string) {
-    return new Intl.DateTimeFormat("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(new Date(value));
-  }
-
-  function formatDate(value: string) {
-    const [year, month, day] = value.split("-")
-
-    return `${day}/${month}/${year}`
-  }
-
   return (
     <main
       className="dashboard"
@@ -137,8 +133,14 @@ function App() {
     >
       <header className="page-header">
         <div>
-          <p className="eyebrow">Vigilância epidemiológica</p>
-          <h1 id="page-title">Sentinela</h1>
+          <p className="eyebrow">
+            Vigilância epidemiológica
+          </p>
+
+          <h1 id="page-title">
+            Sentinela
+          </h1>
+
           <p className="subtitle">
             Monitoramento de SRAG em{" "}
             {selectedRegion?.label ?? region}
@@ -148,7 +150,9 @@ function App() {
         <div className="source">
           <span>Fonte</span>
 
-          <strong>{metadata.source}</strong>
+          <strong>
+            {metadata.source}
+          </strong>
 
           <small>
             Atualizado em{" "}
@@ -175,7 +179,18 @@ function App() {
             id="region-filter"
             value={region}
             onChange={(event) => {
-              setRegion(event.target.value);
+              const nextRegion = event.target.value;
+
+              const regionOption = options.regions.find(
+                (option) => option.value === nextRegion,
+              );
+
+              if (!regionOption) {
+                return ;
+              }
+              
+              setRegion(nextRegion);
+              setYear(regionOption.years[0]);
             }}
           >
             {options.regions.map((option) => (
@@ -201,7 +216,7 @@ function App() {
               setYear(Number(event.target.value));
             }}
           >
-            {options.years.map((option) => (
+            {selectedRegion?.years.map((option) => (
               <option
                 key={option}
                 value={option}
@@ -218,31 +233,58 @@ function App() {
         aria-label="Indicadores principais"
       >
         <article className="card">
-          <span>Registros observados</span>
-          <strong>{totalRecords.toLocaleString("pt-BR")}</strong>
-          <small>SRAG em residentes de {region}</small>
+          <span>
+            Registros observados
+          </span>
+
+          <strong>
+            {totalRecords.toLocaleString("pt-BR")}
+          </strong>
+
+          <small>
+            SRAG em residentes de {region}
+          </small>
         </article>
 
         <article className="card">
-          <span>Última semana observada</span>
-          <strong>SE {metadata.last_observed_week}</strong>
+          <span>
+            Última semana observada
+          </span>
+
+          <strong>
+            SE {metadata.last_observed_week}
+          </strong>
+
           <small>
             {metadata.observed_weeks} semanas disponíveis
           </small>
         </article>
 
         <article className="card">
-          <span>Sinais identificados</span>
-          <strong>{signals.signals.length}</strong>
-          <small>Regra estatística do Sentinela</small>
+          <span>
+            Sinais identificados
+          </span>
+
+          <strong>
+            {signals.signals.length}
+          </strong>
+
+          <small>
+            Regra estatística do Sentinela
+          </small>
         </article>
       </section>
 
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <p className="eyebrow">Série temporal</p>
-            <h2>Evolução semanal de SRAG</h2>
+            <p className="eyebrow">
+              Série temporal
+            </p>
+
+            <h2>
+              Evolução semanal de SRAG
+            </h2>
           </div>
 
           <span>
@@ -251,10 +293,10 @@ function App() {
           </span>
         </div>
 
-        <TrendChart 
+        <TrendChart
           data={trends.weeks}
           signals={signals.signals}
-          year={year} 
+          year={year}
         />
       </section>
 
@@ -264,13 +306,15 @@ function App() {
         aria-labelledby="signals-title"
       >
         <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Monitoramento</p>
+          <div>
+            <p className="eyebrow">
+              Monitoramento
+            </p>
 
-              <h2 id="signals-title">
-                Sinais de aumento incomum
-              </h2>
-            </div>
+            <h2 id="signals-title">
+              Sinais de aumento incomum
+            </h2>
+          </div>
         </div>
 
         {signals.signals.length === 0 ? (
@@ -279,66 +323,83 @@ function App() {
           </p>
         ) : (
           <div className="signal-list">
-              {signals.signals.map((signal) => (
-                <article
-                  id={`signal-week-${signal.epi_week}`}
-                  className="signal-card"
-                  key={signal.epi_week}
-                >
+            {signals.signals.map((signal) => (
+              <article
+                id={`signal-week-${signal.epi_week}`}
+                className="signal-card"
+                key={signal.epi_week}
+              >
+                <div>
+                  <span className="signal-badge">
+                    Sinal
+                  </span>
+
+                  <h3>
+                    Semana epidemiológica{" "}
+                    {signal.epi_week}
+                  </h3>
+
+                  <p>
+                    {signal.signal_reason}
+                  </p>
+                </div>
+
+                <dl className="signal-values">
                   <div>
-                    <span className="signal-badge">
-                      Sinal
-                    </span>
+                    <dt>
+                      Observado
+                    </dt>
 
-                    <h3>
-                      Semana epidemiológica {signal.epi_week}
-                    </h3>
-
-                    <p>{signal.signal_reason}</p>
+                    <dd>
+                      {signal.record_count.toLocaleString(
+                        "pt-BR",
+                      )}
+                    </dd>
                   </div>
 
-                  <dl className="signal-values">
-                    <div>
-                      <dt>Observado</dt>
-                      <dd>
-                        {signal.record_count.toLocaleString(
-                          "pt-BR",
-                        )}
-                      </dd>
-                    </div>
+                  <div>
+                    <dt>
+                      Mediana histórica
+                    </dt>
 
-                    <div>
-                      <dt>Mediana histórica</dt>
-                      <dd>
-                        {signal.historical_median.toLocaleString(
-                          "pt-BR",
-                        )}
-                      </dd>
-                    </div>
+                    <dd>
+                      {signal.historical_median.toLocaleString(
+                        "pt-BR",
+                      )}
+                    </dd>
+                  </div>
 
-                    <div>
-                      <dt>Q75</dt>
-                      <dd>
-                        {signal.q75.toLocaleString("pt-BR")}
-                      </dd>
-                    </div>
+                  <div>
+                    <dt>
+                      Q75
+                    </dt>
 
-                    <div>
-                      <dt>Razão</dt>
-                      <dd>
-                        {signal.ratio_to_median.toLocaleString(
-                          "pt-BR",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          },
-                        )}
-                        ×
-                      </dd>
-                    </div>
-                  </dl>
-                </article>
-              ))}
+                    <dd>
+                      {signal.q75.toLocaleString(
+                        "pt-BR",
+                      )}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>
+                      Razão
+                    </dt>
+
+                    <dd>
+                      {signal.ratio_to_median.toLocaleString(
+                        "pt-BR",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        },
+                      )}
+                      ×
+                    </dd>
+                  </div>
+                </dl>
+              </article>
+            ))}
           </div>
         )}
       </section>
@@ -346,19 +407,77 @@ function App() {
       <section className="panel limitations">
         <div className="panel-heading">
           <div>
-            <p className="eyebrow">Sobre os dados</p>
-            <h2>Limitações</h2>
+            <p className="eyebrow">
+              Sobre os dados
+            </p>
+
+            <h2>
+              Limitações
+            </h2>
           </div>
         </div>
 
         <ul>
           {metadata.limitations.map((limitation) => (
-            <li key={limitation}>{limitation}</li>
+            <li key={limitation}>
+              {limitation}
+            </li>
           ))}
         </ul>
       </section>
     </main>
-  )
+  );
+}
+
+function App() {
+  const optionsQuery = useQuery({
+    queryKey: ["options"],
+    queryFn: () =>
+      apiGet<OptionsResponse>("/api/options"),
+  });
+
+  if (optionsQuery.isPending) {
+    return <DashboardLoading />;
+  }
+
+  if (optionsQuery.isError) {
+    return (
+      <main className="dashboard">
+        <DashboardState
+          title="Não foi possível carregar o painel"
+          description="Não foi possível consultar as opções disponíveis."
+          action={{
+            label: "Tentar novamente",
+            onClick: () => {
+              void optionsQuery.refetch();
+            },
+          }}
+        />
+      </main>
+    );
+  }
+
+  const options = optionsQuery.data;
+
+  if (
+    options.regions.length === 0 ||
+    options.regions.every(
+      (region) => region.years.length === 0,
+    )
+  ) {
+    return (
+      <main className="dashboard">
+        <DashboardState
+          title="Nenhum conjunto de dados disponível"
+          description="Não existem regiões e anos disponíveis para consulta."
+        />
+      </main>
+    );
+  }
+
+  return (
+    <Dashboard options={options} />
+  );
 }
 
 export default App;
