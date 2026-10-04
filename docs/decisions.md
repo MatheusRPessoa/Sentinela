@@ -204,3 +204,79 @@ do Sentinela é um sinal estatístico e não constitui confirmação de surto.
 Os resultados de 2024 e 2025 não devem ser utilizados para reajustar
 a regra V1 e simultaneamente continuar sendo tratados como avaliação
 independente.
+
+## Validação retrospectiva — evento respiratório de abril/maio de 2025
+
+### Objetivo
+
+Avaliar se a regra de sinal do Sentinela identifica períodos que coincidem com eventos epidemiológicos relevantes documentados por fontes oficiais.
+
+Esta análise é retrospectiva. Portanto, não demonstra que o sistema teria antecipado o evento em tempo real, pois isso também dependeria da disponibilidade e do atraso de notificação dos dados em cada semana.
+
+### Resultado do Sentinela
+
+Para Minas Gerais em 2025, utilizando como referência histórica os anos de 2019 a 2024, o Sentinela identificou seis semanas consecutivas com sinal de aumento incomum:
+
+| Semana epidemiológica | Observado | Mediana histórica | Q75 | Razão para mediana |
+|---|---:|---:|---:|---:|
+| SE 17 | 1.087 | 695,0 | 1.063,5 | 1,56× |
+| SE 18 | 1.586 | 744,5 | 1.178,0 | 2,13× |
+| SE 19 | 1.941 | 847,0 | 1.285,25 | 2,29× |
+| SE 20 | 2.201 | 986,0 | 1.487,75 | 2,23× |
+| SE 21 | 2.404 | 1.029,5 | 1.558,0 | 2,34× |
+| SE 22 | 2.148 | 1.145,0 | 1.777,75 | 1,88× |
+
+A regra utilizada considera sinal quando o número observado está:
+
+1. acima do terceiro quartil histórico (`Q75`); e
+2. em pelo menos `1,5×` a mediana histórica.
+
+As seis semanas satisfizeram simultaneamente os dois critérios.
+
+### Evidências externas
+
+Em 2 de maio de 2025, o Governo de Minas Gerais decretou situação de emergência em saúde pública em razão do aumento dos casos de Síndrome Respiratória Aguda Grave (SRAG). O decreto cita aumento da circulação de vírus respiratórios, crescimento da demanda por leitos pediátricos e de UTI e incremento expressivo dos casos de SRAG.
+
+Em 6 de maio de 2025, a Prefeitura de Uberlândia também declarou situação de emergência. Segundo o município, houve aumento aproximado de 90% nas internações por SRAG causada por vírus respiratórios não relacionados à Covid-19 durante abril, com tendência de crescimento a partir da segunda quinzena do mês.
+
+Em 7 de maio ocorreu a primeira reunião do Centro de Operações de Emergências em Saúde por Síndrome Respiratória Aguda Grave (COE-Minas-SRAG), formalizada pelo Governo de Minas para coordenar e monitorar as ações de enfrentamento.
+
+Em 21 de maio, Uberlândia anunciou um plano municipal de enfrentamento das síndromes respiratórias, incluindo abertura de novos leitos, reforço de equipes e criação de comissão específica para SRAG.
+
+### Relação temporal
+
+A sequência identificada pelo Sentinela começa na SE 17 de 2025 e permanece até a SE 22.
+
+Esse período coincide com o aumento de internações e com as medidas de resposta adotadas pelo poder público durante o fim de abril e o mês de maio.
+
+Em termos retrospectivos, há concordância temporal entre:
+
+- o início da sequência de sinais estatísticos;
+- o aumento documentado de internações por SRAG;
+- a declaração estadual de situação de emergência;
+- a mobilização de estruturas de resposta;
+- e a ampliação de capacidade assistencial.
+
+### Interpretação
+
+O resultado sugere que a regra do Sentinela é capaz de identificar alterações epidemiológicas relevantes em uma série histórica real.
+
+Entretanto, essa concordância não deve ser interpretada como evidência de causalidade ou como prova de antecipação do evento.
+
+Para afirmar capacidade de alerta precoce, seria necessário reconstruir o cenário de disponibilidade dos dados em cada semana, considerando atrasos de notificação, revisão de registros e data efetiva de atualização da base.
+
+### Conclusão
+
+O episódio de abril/maio de 2025 constitui um caso de validação retrospectiva favorável ao Sentinela.
+
+A sequência de seis sinais consecutivos nas SE 17–22 coincide temporalmente com um período oficialmente reconhecido de aumento de SRAG em Minas Gerais.
+
+Esse resultado apoia a utilidade do método como ferramenta de monitoramento epidemiológico e justifica análises adicionais em outros anos e eventos conhecidos.
+
+### Fontes externas
+
+- Governo de Minas Gerais. **Estado decreta situação de emergência em saúde pública diante do aumento de doenças respiratórias**, 02/05/2025.
+- Assembleia Legislativa de Minas Gerais. **Decreto com Numeração Especial nº 411, de 02/05/2025**.
+- Prefeitura de Uberlândia. **Prefeitura decreta situação de emergência devido ao aumento de casos de Síndrome Respiratória Aguda Grave**, 06/05/2025.
+- Governo de Minas Gerais. **Governo de Minas implementa Centro de Operações de Emergência em Saúde por Síndrome Respiratória Aguda Grave**, 08/05/2025.
+- Prefeitura de Uberlândia. **Prefeitura apresenta Plano de Ação para o enfrentamento das síndromes respiratórias**, 21/05/2025.
