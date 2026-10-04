@@ -2,6 +2,8 @@ from backend.app.repositories.epidemiological import (
     EpidemiologicalRepository,
 )
 
+import pandas as pd
+
 class TrendsService:
     def __init__(
         self,
@@ -29,6 +31,7 @@ class TrendsService:
 
         reference = self.repository.get_historical_reference(
             region=region,
+            year=year,
         )
 
         weekly_required = {
@@ -90,22 +93,27 @@ class TrendsService:
             "q75",
         ]
 
-        if trends[historical_columns].isna().any().any():
-            raise ValueError(
-                "Existem semanas observadas sem referência histórica."
-            )
-
         trends = trends.sort_values("epi_week")
 
         return [
             {
                 "epi_week": int(row.epi_week),
                 "record_count": int(row.record_count),
-                "historical_median": float(
-                    row.historical_median
+                "historical_median": (
+                    None
+                    if pd.isna(row.historical_median)
+                    else float(row.historical_median)
                 ),
-                "q25": float(row.q25),
-                "q75": float(row.q75),
+                "q25": (
+                    None
+                    if pd.isna(row.q25)
+                    else float(row.q25)
+                ),
+                "q75": (
+                    None
+                    if pd.isna(row.q75)
+                    else float(row.q75)
+                ),
             }
             for row in trends.itertuples(index=False)
         ]

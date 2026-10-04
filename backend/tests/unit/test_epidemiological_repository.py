@@ -39,7 +39,7 @@ def test_dataset_exists_returns_false_for_unavailable_year():
 
     result = repository.dataset_exists(
         region="MG",
-        year=2025,
+        year=2024,
     )
 
     assert result is False

@@ -15,6 +15,6 @@ def test_get_available_options():
         {
             "value": "MG",
             "label": "Minas Gerais",
-            "years": [2026],
+            "years": [2026, 2025],
         }
     ]

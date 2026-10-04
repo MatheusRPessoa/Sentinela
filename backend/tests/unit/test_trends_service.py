@@ -18,8 +18,6 @@ class FakeEpidemiologicalRepository:
         region: str,
         year: int,
     ) -> pd.DataFrame:
-        # Mantém o contrato do repositório; os dados deste fake são fixos.
-        # pylint: disable=unused-argument
         return pd.DataFrame(
             {
                 "epi_week": [1, 2],
@@ -30,9 +28,8 @@ class FakeEpidemiologicalRepository:
     def get_historical_reference(
         self,
         region: str,
+        year: int
     ) -> pd.DataFrame:
-        # Mantém o contrato do repositório; os dados deste fake são fixos.
-        # pylint: disable=unused-argument
         return pd.DataFrame(
             {
                 "epi_week": [1, 2],
@@ -74,9 +71,8 @@ class IncompleteReferenceRepository(
     def get_historical_reference(
         self,
         region: str,
+        year: int,
     ) -> pd.DataFrame:
-        # Mantém o contrato do repositório; os dados deste fake são fixos.
-        # pylint: disable=unused-argument
         return  pd.DataFrame(
             {
                "epi_week": [1],
@@ -86,15 +82,28 @@ class IncompleteReferenceRepository(
             }
         )
 
-def test_get_trends_rejects_missing_historical_reference():
+def test_get_trends_preserves_missing_historical_reference():
     repository = IncompleteReferenceRepository()
     service = TrendsService(repository)
 
-    with pytest.raises(
-        ValueError,
-        match="sem referência histórica",
-    ):
-        service.get_trends(
-            region="MG",
-            year=2026,
-        )
+    result = service.get_trends(
+        region="MG",
+        year=2026,
+    )
+
+    assert result == [
+        {
+            "epi_week": 1,
+            "record_count": 100,
+            "historical_median": 80.0,
+            "q25": 70.0,
+            "q75": 90.0,
+        },
+        {
+            "epi_week": 2,
+            "record_count": 150,
+            "historical_median": None,
+            "q25": None,
+            "q75": None,
+        }
+    ]

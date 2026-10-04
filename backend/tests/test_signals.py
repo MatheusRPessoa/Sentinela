@@ -72,7 +72,7 @@ def test_get_signals_returns_empty_for_unavailable_year():
         "/api/signals",
         params={
             "region": "MG",
-            "year": 2025,
+            "year": 2024,
         },
     )
 

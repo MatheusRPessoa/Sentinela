@@ -68,7 +68,7 @@ def test_get_metadata_returns_404_for_unavailable_year():
         "/api/metadata",
         params={
             "region": "MG",
-            "year": 2025,
+            "year": 2024,
         },
     )
 

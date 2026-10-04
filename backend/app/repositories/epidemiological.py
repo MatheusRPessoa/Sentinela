@@ -28,13 +28,15 @@ class EpidemiologicalRepository:
     def get_historical_reference(
         self,
         region: str,
+        year: int,
     ) -> pd.DataFrame:
-        # Por enquanto nossa referência disponível é 2019–2025.
-        path = (
+        historical_end_year = year - 1
+
+        path = ( 
             PROCESSED_DATA_DIR
             / (
                 f"srag_{region.lower()}_"
-                "historical_reference_2019_2025.csv"
+                f"historical_reference_2019_{historical_end_year}.csv"
             )
         )
 

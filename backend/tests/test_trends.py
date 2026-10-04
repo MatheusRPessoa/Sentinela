@@ -85,7 +85,7 @@ def test_get_trends_returns_404_for_unavailable_year():
         "/api/trends",
         params={
             "region": "MG",
-            "year": 2025,
+            "year": 2024,
         },
     )
 
