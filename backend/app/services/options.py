@@ -18,20 +18,13 @@ class OptionsService:
     def get_options(self) -> dict:
         datasets = self.repository.get_available_datasets()
 
-        regions = sorted(
-            {
-                region
-                for region, _ in datasets
-            }
-        )
+        regions_with_years: dict[str, set[int]] = {}
 
-        years = sorted(
-            {
-                year
-                for _, year in datasets
-            },
-            reverse=True,
-        )
+        for region, year in datasets:
+            regions_with_years.setdefault(
+                region,
+                set(),
+            ).add(year)
 
         return {
             "regions": [
@@ -40,9 +33,14 @@ class OptionsService:
                     "label": REGION_LABELS.get(
                         region,
                         region,
-                    )
+                    ),
+                    "years": sorted(
+                        years,
+                        reverse=True,
+                    ),
                 }
-                for region in regions
+                for region, years in sorted(
+                    regions_with_years.items()
+                )
             ],
-            "years": years,
         }

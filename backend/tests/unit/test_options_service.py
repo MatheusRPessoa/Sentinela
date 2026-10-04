@@ -8,6 +8,7 @@ class FakeEpidemiologicalRepository:
         return [
             ("MG", 2026),
             ("MG", 2025),
+            ("SP", 2026),
         ]
 
 
@@ -22,11 +23,18 @@ def test_get_options_from_available_datasets():
             {
                 "value": "MG",
                 "label": "Minas Gerais",
-            }
-        ],
-        "years": [
-            2026,
-            2025,
+                "years": [
+                    2026,
+                    2025,
+                ],
+            },
+            {
+                "value": "SP",
+                "label": "SP",
+                "years": [
+                    2026,
+                ],
+            },
         ],
     }
 
@@ -46,5 +54,4 @@ def test_get_options_returns_empty_options_when_no_dataset_exists():
 
     assert result == {
         "regions": [],
-        "years": [],
     }

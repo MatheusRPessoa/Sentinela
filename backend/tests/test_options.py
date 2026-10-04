@@ -15,7 +15,6 @@ def test_get_available_options():
         {
             "value": "MG",
             "label": "Minas Gerais",
+            "years": [2026],
         }
     ]
-
-    assert data["years"] == [2026]
