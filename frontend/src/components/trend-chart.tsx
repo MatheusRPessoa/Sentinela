@@ -23,6 +23,8 @@ interface TrendChartProps {
 
 interface ChartData extends TrendWeek {
   historical_range: number;
+  is_signal: boolean;
+  signal_reason?: string;
 }
 
 interface CustomTooltipProps {
@@ -56,6 +58,16 @@ function CustomTooltip({
       <strong>SE {label}</strong>
 
       <dl>
+        {data.is_signal && (
+            <div className="tooltip-signal">
+                <strong>Sinal de aumento incomum</strong>
+
+                {data.signal_reason && (
+                    <p>{data.signal_reason}</p>
+                )}
+            </div>
+        )}
+
         <div>
           <dt>{year}</dt>
           <dd>{formatNumber(data.record_count)}</dd>
@@ -81,10 +93,18 @@ function CustomTooltip({
 }
 
 export function TrendChart({ data, signals, year }: TrendChartProps) {
-    const chartData: ChartData[] = data.map((week) => ({
-        ...week,
-        historical_range: week.q75 - week.q25,
-    }));
+    const chartData: ChartData[] = data.map((week) => {
+        const signal = signals.find(
+            (signal) => signal.epi_week === week.epi_week,
+        );
+
+        return {
+            ...week,
+            historical_range: week.q75 - week.q25,
+            is_signal: Boolean(signal),
+            signal_reason: signal?.signal_reason,
+        };
+    });
 
     return (
         <div className="trend-chart">
@@ -170,27 +190,13 @@ export function TrendChart({ data, signals, year }: TrendChartProps) {
                         name={String(year)}
                         stroke="#f97316"
                         strokeWidth={3}
-                        dot={false}
-                        activeDot={{ r: 5 }}
-                    />
-
-                    <Line
-                        type="monotone"
-                        dataKey="record_count"
-                        name={String(year)}
-                        stroke="#f97316"
-                        strokeWidth={3}
                         dot={(props) => {
                             const week = props.payload as ChartData;
 
-                            const isSignal = signals.some(
-                            (signal) => signal.epi_week === week.epi_week,
-                            );
-
-                            if (!isSignal) {
-                            return <g />;
+                            if (!week.is_signal) {
+                                return <g />;
                             }
-
+                            
                             return (
                             <circle
                                 cx={props.cx}
@@ -202,7 +208,6 @@ export function TrendChart({ data, signals, year }: TrendChartProps) {
                             />
                             );
                         }}
-                        activeDot={{ r: 5 }}
                         />
                 </ComposedChart>
             </ResponsiveContainer>

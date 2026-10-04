@@ -466,6 +466,26 @@ input {
   clip: rect(0, 0, 0, 0);
 }
 
+.tooltip-signal {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.tooltip-signal strong {
+  display: block;
+  color: #b54708;
+  font-size: 0.8rem;
+}
+
+.tooltip-signal p {
+  margin: 0.35rem 0 0;
+  max-width: 226px;
+  color: #475467;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
 @keyframes skeleton-pulse {
   0%,
   100% {
