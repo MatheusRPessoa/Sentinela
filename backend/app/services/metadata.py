@@ -21,6 +21,8 @@ class MetadataService:
         year: int,
     ) -> dict:
         region = region.strip().upper()
+        historical_start_year = 2019
+        historical_end_year = year - 1
 
         if not self.repository.dataset_exists(
             region=region,
@@ -93,6 +95,8 @@ class MetadataService:
             "observed_weeks": int(
                 observed["epi_week"].nunique()
             ),
+            "historical_start_year": historical_start_year,
+            "historical_end_year": historical_end_year,
             "limitations": [
                 (
                     "Semanas sem cobertura confirmada não são "
@@ -104,7 +108,7 @@ class MetadataService:
                 ),
                 (
                     "A referência histórica utiliza os anos "
-                    "de 2019 a 2025."
+                    f"de {historical_start_year} e {historical_end_year}."
                 ),
             ],
         }

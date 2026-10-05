@@ -42,6 +42,8 @@ export interface MetadataResponse {
   first_observed_week: number;
   last_observed_week: number;
   observed_weeks: number;
+  historical_start_year: number;
+  historical_end_year: number;
   limitations: string[];
 }
 
@@ -53,4 +55,19 @@ export interface RegionOption {
 
 export interface OptionsResponse {
   regions: RegionOption[];
+}
+
+export interface CoverageWeek {
+  epi_week: number;
+  week_start: string;
+  week_end: string;
+  record_count: number | null;
+  calendar_status: string;
+  data_status: string;
+}
+
+export interface CoverageResponse {
+  region: string;
+  year: number;
+  weeks: CoverageWeek[];
 }

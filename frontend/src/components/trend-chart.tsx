@@ -3,6 +3,7 @@ import {
   CartesianGrid,
   ComposedChart,
   Line,
+  ReferenceArea,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -11,18 +12,27 @@ import {
 } from "recharts";
 
 import type {
+    CoverageWeek,
     Signal, 
     TrendWeek 
 } from "../types/api";
 
 interface TrendChartProps {
   data: TrendWeek[];
+  coverage: CoverageWeek[];
   signals: Signal[];
   year: number;
 }
 
-interface ChartData extends TrendWeek {
-  historical_range: number;
+interface ChartData {
+  epi_week: number;
+  record_count: number | null;
+  historical_median: number | null;
+  q25: number | null;
+  q75: number | null;
+  historical_range: number | null;
+  calendar_status: string;
+  data_status: string;
   is_signal: boolean;
   signal_reason?: string;
 }
@@ -48,10 +58,31 @@ function CustomTooltip({
 
   const data = payload[0].payload;
 
-  const formatNumber = (value: number) =>
-    value.toLocaleString("pt-BR", {
-      maximumFractionDigits: 1,
+  if (data.data_status !== "observado") {
+    return (
+        <div className="chart-tooltip">
+            <strong>SE {label}</strong>
+
+            <div className="tooltip-no-coverage">
+                <strong>Sem cobertura confirmada</strong>
+
+                <p>
+                    Não há dados observados disponíveis para esta semana.
+                </p>
+            </div>
+        </div>
+    );
+  }
+
+  const formatNumber = (value: number | null) => {
+    if (value === null) {
+        return "—";
+    }
+
+    return value.toLocaleString("pt-BR", {
+        maximumFractionDigits: 1,
     });
+  };
 
   return (
     <div className="chart-tooltip">
@@ -92,19 +123,47 @@ function CustomTooltip({
   );
 }
 
-export function TrendChart({ data, signals, year }: TrendChartProps) {
-    const chartData: ChartData[] = data.map((week) => {
+export function TrendChart({ data, coverage, signals, year }: TrendChartProps) {
+    const chartData: ChartData[] = coverage.map((coverageWeek) => {
+        const trend = data.find(
+            (week) => week.epi_week === coverageWeek.epi_week,
+        );
+
         const signal = signals.find(
-            (signal) => signal.epi_week === week.epi_week,
+            (signal) => signal.epi_week === coverageWeek.epi_week,
         );
 
         return {
-            ...week,
-            historical_range: week.q75 - week.q25,
-            is_signal: Boolean(signal),
-            signal_reason: signal?.signal_reason,
+            epi_week: coverageWeek.epi_week,
+            record_count: coverageWeek.record_count,
+
+            historical_median:
+            trend?.historical_median ?? null,
+
+            q25: trend?.q25 ?? null,
+            q75: trend?.q75 ?? null,
+
+            historical_range:
+            trend !== undefined
+                ? trend.q75 - trend.q25
+                : null,
+
+            calendar_status: coverageWeek.calendar_status,
+            data_status: coverageWeek.data_status,
+
+            is_signal: signal !== undefined,
+            signal_reason: signal?.signal_reason,  
         };
     });
+
+    const firstUncoveredWeek = coverage.find(
+        (week) => week.data_status !== "observado",
+    )?.epi_week;
+
+    const firstSignalWeek =
+        signals.length > 0
+          ? Math.min(...signals.map((signal) => signal.epi_week))
+          : null;
 
     return (
         <div className="trend-chart">
@@ -144,14 +203,50 @@ export function TrendChart({ data, signals, year }: TrendChartProps) {
                             x={signal.epi_week}
                             stroke="#b54708"
                             strokeDasharray="4 4"
-                            label={{
-                                value: "Sinal",
-                                position: "insideTopRight",
-                                fill: "#b54708",
-                                fontSize: 12, 
-                            }}
+                            label={
+                                signal.epi_week === firstSignalWeek
+                                ? {
+                                    value: "Sinal",
+                                    position: "insideTopRight",
+                                    fill: "#b54708",
+                                    fontSize: 12,    
+                                }
+                              : undefined
+                            }
                         />
                     ))}
+
+                    {firstUncoveredWeek !== undefined && (
+                        <ReferenceArea
+                            x1={firstUncoveredWeek}
+                            x2={52}
+                            fill="#f2f4f7"
+                            fillOpacity={0.7}
+                            stroke="none"
+                            label={{
+                            value: "Sem cobertura confirmada",
+                            position: "insideTop",
+                            fill: "#667085",
+                            fontSize: 12,
+                            }}
+                        />
+                    )}
+
+                    {firstUncoveredWeek !== undefined && (
+                        <ReferenceArea
+                            x1={firstUncoveredWeek}
+                            x2={52}
+                            fill="#f2f4f7"
+                            fillOpacity={0.7}
+                            stroke="none"
+                            label={{
+                            value: "Sem cobertura confirmada",
+                            position: "insideTop",
+                            fill: "#667085",
+                            fontSize: 12,
+                            }}
+                        />
+                    )}
 
                     <Area
                         type="monotone"

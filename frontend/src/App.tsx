@@ -6,6 +6,7 @@ import { TrendChart } from "./components/trend-chart";
 import { apiGet } from "./services/api";
 
 import type {
+  CoverageResponse,
   MetadataResponse,
   OptionsResponse,
   SignalResponse,
@@ -67,7 +68,18 @@ function Dashboard({ options }: DashboardProps) {
       }),
   });
 
+  const coverageQuery = useQuery({
+    queryKey: ["coverage", region, year],
+    queryFn: () =>
+      apiGet<CoverageResponse>("/api/coverage", {
+        region,
+        year,
+      }),
+    enabled: region !== null && year !== null,
+  });
+
   if (
+    coverageQuery.isPending ||
     metadataQuery.isPending ||
     trendsQuery.isPending ||
     signalsQuery.isPending
@@ -78,13 +90,16 @@ function Dashboard({ options }: DashboardProps) {
   if (
     metadataQuery.isError ||
     trendsQuery.isError ||
-    signalsQuery.isError
+    signalsQuery.isError ||
+    coverageQuery.isError
+
   ) {
     const handleRetry = () => {
       void Promise.all([
         metadataQuery.refetch(),
         trendsQuery.refetch(),
         signalsQuery.refetch(),
+        coverageQuery.refetch(),
       ]);
     };
 
@@ -105,6 +120,7 @@ function Dashboard({ options }: DashboardProps) {
   const metadata = metadataQuery.data;
   const trends = trendsQuery.data;
   const signals = signalsQuery.data;
+  const coverage = coverageQuery.data;
 
   if (trends.weeks.length === 0) {
     return (
@@ -286,15 +302,22 @@ function Dashboard({ options }: DashboardProps) {
               Evolução semanal de SRAG
             </h2>
           </div>
+          <div className="panel-meta">
+            <span>
+              Observado: SE {metadata.first_observed_week}–
+              {metadata.last_observed_week}
+            </span>
 
-          <span>
-            SE {metadata.first_observed_week}–
-            {metadata.last_observed_week}
-          </span>
+            <span>
+              Referência: {metadata.historical_start_year}–
+              {metadata.historical_end_year}
+            </span>
+          </div>
         </div>
 
         <TrendChart
           data={trends.weeks}
+          coverage={coverage.weeks}
           signals={signals.signals}
           year={year}
         />

@@ -486,6 +486,16 @@ input {
   line-height: 1.4;
 }
 
+.panel-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+
+  font-size: 0.875rem;
+  color: #475467;
+}
+
 @keyframes skeleton-pulse {
   0%,
   100% {

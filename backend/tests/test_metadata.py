@@ -73,3 +73,35 @@ def test_get_metadata_returns_404_for_unavailable_year():
     )
 
     assert response.status_code == 404
+
+def test_get_metada_uses_correct_historical_period_for_2025():
+    response = client.get(
+        "/api/metadata",
+        params={
+            "region": "MG",
+            "year": 2025,
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["historical_start_year"] == 2019
+    assert data["historical_end_year"] == 2024
+
+def test_get_metadata_users_correct_historical_period_for_2026():
+    response = client.get(
+        "/api/metadata",
+        params={
+            "region": "MG",
+            "year": 2026,
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["historical_start_year"] == 2019
+    assert data["historical_end_year"] == 2025
