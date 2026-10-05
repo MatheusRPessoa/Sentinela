@@ -133,3 +133,48 @@ class EpidemiologicalRepository:
             region,
             year,
         ) in self.get_available_datasets()
+
+    def get_nowcast(
+        self,
+        region: str,
+        year: int,
+    ) -> pd.DataFrame:
+        region = region.strip().lower()
+
+        path = (
+            PROCESSED_DATA_DIR
+            / f"srag_{year}_{region}_nowcast.csv"
+        )
+
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Arquivo de nowcast não encontrado: {path}"
+            )
+
+        return pd.read_csv(
+            path,
+            sep=";",
+        )
+
+    def get_operational_status(
+        self,
+        region: str,
+        year: int,
+    ) -> pd.DataFrame:
+        region = region.strip().lower()
+
+        path = (
+            PROCESSED_DATA_DIR
+            / f"srag_{year}_{region}_operational_status.csv"
+        )
+
+        if not path.exists():
+            raise FileNotFoundError(
+                "Arquivo de estado operacional "
+                f"não encontrado: {path}"
+        )
+
+        return pd.read_csv(
+            path,
+            sep=";",
+        )
