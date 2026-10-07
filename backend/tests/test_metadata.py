@@ -55,7 +55,7 @@ def test_get_metadata_returns_404_for_unavailable_region():
     response = client.get(
         "/api/metadata",
         params={
-            "region": "SP",
+            "region": "RJ",
             "year": 2026,
         },
     )

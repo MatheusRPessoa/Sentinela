@@ -13,9 +13,11 @@ class EpidemiologicalRepository:
         region: str,
         year: int,
     ) -> pd.DataFrame:
+        region = region.strip().lower()
+
         path = (
             PROCESSED_DATA_DIR
-            / f"srag_{year}_{region.lower()}_weekly.csv"
+            / f"srag_{year}_{region}_weekly.csv"
         )
 
         if not path.exists():
@@ -31,11 +33,12 @@ class EpidemiologicalRepository:
         year: int,
     ) -> pd.DataFrame:
         historical_end_year = year - 1
+        region = region.strip().lower()
 
         path = ( 
             PROCESSED_DATA_DIR
             / (
-                f"srag_{region.lower()}_"
+                f"srag_{region}_"
                 f"historical_reference_2019_{historical_end_year}.csv"
             )
         )
@@ -52,9 +55,11 @@ class EpidemiologicalRepository:
         region: str,
         year: int,
     ) -> pd.DataFrame:
+        region = region.strip().lower()
+
         path = (
             PROCESSED_DATA_DIR
-            / f"srag_{year}_{region.lower()}_signal_evaluation.csv"
+            / f"srag_{year}_{region}_signal_evaluation.csv"
         )
 
         if not path.exists():
@@ -69,9 +74,11 @@ class EpidemiologicalRepository:
         region: str,
         year: int,
     ) -> pd.DataFrame:
+        region = region.strip().lower()
+
         path = (
             PROCESSED_DATA_DIR
-            / f"srag_{year}_{region.lower()}_weekly_coverage.csv"
+            / f"srag_{year}_{region}_weekly_coverage.csv"
         )
 
         if not path.exists():
@@ -127,12 +134,14 @@ class EpidemiologicalRepository:
         region: str,
         year: int,
     ) -> bool:
-        region = region.strip().upper()
+        region = region.strip().lower()
 
-        return (
-            region,
-            year,
-        ) in self.get_available_datasets()
+        path = (
+            PROCESSED_DATA_DIR
+            / f"srag_{year}_{region}_weekly_coverage.csv"
+        )
+
+        return path.exists()
 
     def get_nowcast(
         self,

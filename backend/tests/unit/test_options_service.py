@@ -2,15 +2,21 @@ from backend.app.services.options import OptionsService
 
 
 class FakeEpidemiologicalRepository:
-    def get_available_datasets(
+    def dataset_exists(
         self,
-    ) -> list[tuple[str, int]]:
-        return [
-            ("MG", 2026),
+        region: str,
+        year: int,
+    ) -> bool:
+        available = {
             ("MG", 2025),
+            ("MG", 2026),
             ("SP", 2026),
-        ]
+        }
 
+        return (
+            region.upper(),
+            year,
+        ) in available
 
 def test_get_options_from_available_datasets():
     repository = FakeEpidemiologicalRepository()
@@ -30,7 +36,7 @@ def test_get_options_from_available_datasets():
             },
             {
                 "value": "SP",
-                "label": "SP",
+                "label": "São Paulo",
                 "years": [
                     2026,
                 ],
@@ -40,11 +46,13 @@ def test_get_options_from_available_datasets():
 
 
 class EmptyEpidemiologicalRepository:
-    def get_available_datasets(
+    def dataset_exists(
         self,
-    ) -> list[tuple[str, int]]:
-        return []
-
+        region: str,
+        year: int,
+    ) -> bool:
+        _ = region, year
+        return False
 
 def test_get_options_returns_empty_options_when_no_dataset_exists():
     repository = EmptyEpidemiologicalRepository()

@@ -108,7 +108,7 @@ class MetadataService:
                 ),
                 (
                     "A referência histórica utiliza os anos "
-                    f"de {historical_start_year} e {historical_end_year}."
+                    f"de {historical_start_year} a {historical_end_year}."
                 ),
             ],
         }

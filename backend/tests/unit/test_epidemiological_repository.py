@@ -28,7 +28,7 @@ def test_dataset_exists_returns_false_for_unavailable_region():
     repository = EpidemiologicalRepository()
 
     result = repository.dataset_exists(
-        region="SP",
+        region="RJ",
         year=2026,
     )
 

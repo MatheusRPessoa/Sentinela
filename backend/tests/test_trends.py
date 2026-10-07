@@ -72,7 +72,7 @@ def test_get_trends_returns_404_for_unavailable_region():
     response = client.get(
         "/api/trends",
         params={
-            "region": "SP",
+            "region": "RJ",
             "year": 2026,
         },
     )
