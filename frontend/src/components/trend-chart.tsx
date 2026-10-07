@@ -13,14 +13,16 @@ import {
 
 import type {
     CoverageWeek,
+    OperationalWeek,
     Signal, 
-    TrendWeek 
+    TrendWeek,
 } from "../types/api";
 
 interface TrendChartProps {
   data: TrendWeek[];
   coverage: CoverageWeek[];
   signals: Signal[];
+  operationalStatus?: OperationalWeek[];
   year: number;
 }
 
@@ -123,7 +125,7 @@ function CustomTooltip({
   );
 }
 
-export function TrendChart({ data, coverage, signals, year }: TrendChartProps) {
+export function TrendChart({ data, coverage, signals, operationalStatus = [], year }: TrendChartProps) {
     const chartData: ChartData[] = coverage.map((coverageWeek) => {
         const trend = data.find(
             (week) => week.epi_week === coverageWeek.epi_week,
@@ -156,17 +158,39 @@ export function TrendChart({ data, coverage, signals, year }: TrendChartProps) {
         };
     });
 
-    const firstUncoveredWeek = coverage.find(
-        (week) => week.data_status !== "observado",
-    )?.epi_week;
+    const alertWeeks = operationalStatus.filter(
+        (week) => week.operational_state === "ALERT",
+    );
 
-    const firstSignalWeek =
-        signals.length > 0
-          ? Math.min(...signals.map((signal) => signal.epi_week))
+    const firstAlertWeek =
+        alertWeeks.length > 0
+          ? Math.min(...alertWeeks.map((week) => week.epi_week))
+          : null;
+
+    const lastAlertWeek =
+        alertWeeks.length > 0
+          ? Math.max(...alertWeeks.map((week) => week.epi_week))
           : null;
 
     return (
         <div className="trend-chart">
+            <div className="chart-annotations">
+                {firstAlertWeek !== null &&
+                    lastAlertWeek !== null && (
+                        <div className="chart-annotations">
+                        <div className="chart-annotation-group">
+                            <span className="chart-annotation-label">
+                            Período em ALERT:
+                            </span>
+
+                            <span className="chart-annotation-chip chart-annotation-chip-alert">
+                            SE {firstAlertWeek}–{lastAlertWeek}
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             <ResponsiveContainer width="100%" height={380}>
                 <ComposedChart
                     data={chartData}
@@ -177,6 +201,7 @@ export function TrendChart({ data, coverage, signals, year }: TrendChartProps) {
                         left: 0,
                     }}
                 >
+
                     <CartesianGrid strokeDasharray="3 3" />
 
                     <XAxis
@@ -203,48 +228,16 @@ export function TrendChart({ data, coverage, signals, year }: TrendChartProps) {
                             x={signal.epi_week}
                             stroke="#b54708"
                             strokeDasharray="4 4"
-                            label={
-                                signal.epi_week === firstSignalWeek
-                                ? {
-                                    value: "Sinal",
-                                    position: "insideTopRight",
-                                    fill: "#b54708",
-                                    fontSize: 12,    
-                                }
-                              : undefined
-                            }
                         />
                     ))}
 
-                    {firstUncoveredWeek !== undefined && (
+                    {firstAlertWeek !== null && lastAlertWeek !== null && (
                         <ReferenceArea
-                            x1={firstUncoveredWeek}
-                            x2={52}
-                            fill="#f2f4f7"
-                            fillOpacity={0.7}
+                            x1={firstAlertWeek}
+                            x2={lastAlertWeek}
+                            fill="#fee2e2"
+                            fillOpacity={0.35}
                             stroke="none"
-                            label={{
-                            value: "Sem cobertura confirmada",
-                            position: "insideTop",
-                            fill: "#667085",
-                            fontSize: 12,
-                            }}
-                        />
-                    )}
-
-                    {firstUncoveredWeek !== undefined && (
-                        <ReferenceArea
-                            x1={firstUncoveredWeek}
-                            x2={52}
-                            fill="#f2f4f7"
-                            fillOpacity={0.7}
-                            stroke="none"
-                            label={{
-                            value: "Sem cobertura confirmada",
-                            position: "insideTop",
-                            fill: "#667085",
-                            fontSize: 12,
-                            }}
                         />
                     )}
 
@@ -268,6 +261,17 @@ export function TrendChart({ data, coverage, signals, year }: TrendChartProps) {
                         name="Faixa histórica Q25–Q75"
                         isAnimationActive={false}
                     />
+
+                    {firstAlertWeek !== null &&
+                        lastAlertWeek !== null && (
+                            <ReferenceArea
+                                x1={firstAlertWeek}
+                                x2={lastAlertWeek}
+                                fill="#fee2e2"
+                                fillOpacity={0.35}
+                                stroke="none"
+                            />
+                    )}
 
                     <Line
                         type="monotone"

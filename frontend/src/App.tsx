@@ -7,6 +7,8 @@ import { apiGet } from "./services/api";
 
 import type {
   CoverageResponse,
+  NowcastResponse,
+  OperationalStatusResponse,
   MetadataResponse,
   OptionsResponse,
   SignalResponse,
@@ -78,6 +80,28 @@ function Dashboard({ options }: DashboardProps) {
     enabled: region !== null && year !== null,
   });
 
+  const nowcastQuery = useQuery({
+    queryKey: ["nowcast", region, year],
+    queryFn: () =>
+        apiGet<NowcastResponse>("/api/nowcast", {
+          region,
+          year,
+        }),
+      enabled: region !== null && year !== null,
+      retry: false,
+  });
+
+  const operationalStatusQuery = useQuery({
+    queryKey: ["operational-status", region, year],
+    queryFn: () =>
+      apiGet<OperationalStatusResponse>("/api/status", {
+        region,
+        year,
+      }),
+    enabled: region !== null && year !== null,
+    retry: false,
+  });
+
   if (
     coverageQuery.isPending ||
     metadataQuery.isPending ||
@@ -122,6 +146,11 @@ function Dashboard({ options }: DashboardProps) {
   const signals = signalsQuery.data;
   const coverage = coverageQuery.data;
 
+  const nowcast = nowcastQuery.data ?? null;
+
+  const operationalStatus =
+    operationalStatusQuery.data ?? null;
+
   if (trends.weeks.length === 0) {
     return (
       <main className="dashboard">
@@ -141,6 +170,37 @@ function Dashboard({ options }: DashboardProps) {
   const selectedRegion = options.regions.find(
     (option) => option.value === region,
   );
+
+  const operationalWeeks =
+    operationalStatus?.weeks ?? [];
+
+  const latestOperationalWeek =
+    operationalWeeks.length > 0
+      ? operationalWeeks[
+          operationalWeeks.length - 1
+        ]
+      : null;
+
+  const currentOperationalState =
+    latestOperationalWeek?.operational_state ?? null;
+
+  const lastStableState =
+    latestOperationalWeek?.last_stable_state ?? null;
+  
+  const firstSignalWeek =
+    operationalWeeks.find(
+      (week) =>
+         week.operational_state === "SIGNAL",
+    ) ?? null;
+
+  const firstAlertWeek =
+    operationalWeeks.find(
+      (week) =>
+        week.operational_state === "ALERT",
+    ) ?? null;
+
+  const firstNowcastSignal =
+    nowcast?.weeks[0] ?? null;
 
   return (
     <main
@@ -319,6 +379,9 @@ function Dashboard({ options }: DashboardProps) {
           data={trends.weeks}
           coverage={coverage.weeks}
           signals={signals.signals}
+          operationalStatus={
+            operationalStatus?.weeks ?? []
+          }
           year={year}
         />
       </section>
@@ -425,6 +488,171 @@ function Dashboard({ options }: DashboardProps) {
             ))}
           </div>
         )}
+        </section>
+
+        <section
+          className="panel operational-panel"
+          aria-labelledby="operational-title"
+        >
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">
+                Situação operacional
+              </p>
+
+              <h2 id="operational-title">
+                Estado do monitoramento
+              </h2>
+            </div>
+          </div>
+
+        <article className="card operational-card">
+          <div className="operational-header">
+            <div>
+              <span className="operational-label">
+                Estado operacional
+              </span>
+
+              {currentOperationalState ? (
+                <strong
+                  className={`operational-state operational-state-${currentOperationalState.toLowerCase()}`}
+                >
+                  {currentOperationalState}
+                </strong>
+              ) : (
+                <strong className="operational-state operational-state-unavailable">
+                  —
+                </strong>
+              )}
+            </div>
+
+            {currentOperationalState && (
+              <span className="operational-current-week">
+                Situação atual do período analisado
+              </span>
+            )}
+          </div>
+
+          {currentOperationalState ? (
+            <div className="operational-history">
+              {firstSignalWeek && (
+                <div className="operational-history-item">
+                  <span>Primeiro sinal</span>
+
+                  <strong>
+                    SE {firstSignalWeek.epi_week}
+                  </strong>
+                </div>
+              )}
+
+              {firstAlertWeek && (
+                <div className="operational-history-item">
+                  <span>Início do alerta</span>
+
+                  <strong>
+                    SE {firstAlertWeek.epi_week}
+                  </strong>
+                </div>
+              )}
+
+              <div className="operational-history-item">
+                <span>Semana atual:</span>
+
+                <strong>
+                  {currentOperationalState}
+                </strong>
+              </div>
+
+               {currentOperationalState === "PENDING" &&
+                  lastStableState && (
+                    <div className="operational-history-item">
+                      <span>Último estado estável</span>
+
+                      <strong>
+                        {lastStableState}
+                      </strong>
+                    </div>
+                )}
+            </div>
+          ) : (
+            <p className="operational-unavailable-message">
+              Análise operacional indisponível para este período.
+            </p>
+          )}
+
+          {currentOperationalState === "PENDING" && (
+            <p className="operational-pending-message">
+              A semana mais recente ainda não atingiu maturidade suficiente
+              para avaliação operacional.
+            </p>
+          )}
+
+          {firstNowcastSignal && (
+            <div
+              className="nowcast-summary"
+              aria-label="Resumo do nowcast"
+            >
+              <div>
+                <span>
+                  Primeiro sinal com nowcasting
+                </span>
+
+                <strong>
+                  SE {firstNowcastSignal.epi_week}
+                </strong>
+              </div>
+
+              <div>
+                <span>Defasagem</span>
+
+                <strong>
+                  D+{firstNowcastSignal.lag_days}
+                </strong>
+              </div>
+
+              <div>
+                <span>Casos conhecidos</span>
+
+                <strong>
+                  {firstNowcastSignal.known_cases.toLocaleString(
+                    "pt-BR",
+                  )}
+                </strong>
+              </div>
+
+              <div>
+                <span>Estimativa</span>
+
+                <strong>
+                  {firstNowcastSignal.nowcast.toLocaleString(
+                    "pt-BR",
+                    {
+                      maximumFractionDigits: 1,
+                    },
+                  )}
+                </strong>
+              </div>
+            </div>
+          )}
+        </article>
+
+        <div className="operational-explanation">
+          <span>
+            <strong>NORMAL:</strong> sem alerta ativo no período atual.
+          </span>
+
+          <span>
+            <strong>SIGNAL:</strong> uma semana madura acima dos limiares.
+          </span>
+
+          <span>
+            <strong>ALERT:</strong> duas semanas consecutivas com sinal maduro.
+          </span>
+
+          <span>
+            <strong>PENDING:</strong> semana mais recente ainda sem dados maduros para classificação operacional
+          </span>
+        </div>
       </section>
 
       <section className="panel limitations">

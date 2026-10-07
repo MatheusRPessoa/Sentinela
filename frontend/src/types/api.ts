@@ -71,3 +71,44 @@ export interface CoverageResponse {
   year: number;
   weeks: CoverageWeek[];
 }
+
+export interface NowcastWeek {
+  epi_week: number;
+  lag_days: number;
+  snapshot_date: string;
+  known_cases: number;
+  nowcast: number;
+  q75: number;
+  median_threshold: number;
+  would_signal: boolean;
+}
+
+export interface NowcastResponse {
+  region: string;
+  year: number;
+  weeks: NowcastWeek[];
+}
+
+export type OperationalState = 
+  | "NORMAL"
+  | "SIGNAL"
+  | "ALERT"
+  | "PENDING";
+
+export interface OperationalWeek {
+  epi_week: number;
+  is_mature: boolean;
+  has_signal: boolean | null;
+  operational_state: OperationalState;
+  last_stable_state:
+    | "NORMAL"
+    | "SIGNAL"
+    | "ALERT";
+  consecutive_signals: number;
+  consecutive_no_signals: number;
+}
+export interface OperationalStatusResponse {
+  region: string;
+  year: number;
+  weeks: OperationalWeek[];
+}
