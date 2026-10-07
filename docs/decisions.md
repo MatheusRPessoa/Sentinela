@@ -280,3 +280,14 @@ Esse resultado apoia a utilidade do método como ferramenta de monitoramento epi
 - Prefeitura de Uberlândia. **Prefeitura decreta situação de emergência devido ao aumento de casos de Síndrome Respiratória Aguda Grave**, 06/05/2025.
 - Governo de Minas Gerais. **Governo de Minas implementa Centro de Operações de Emergência em Saúde por Síndrome Respiratória Aguda Grave**, 08/05/2025.
 - Prefeitura de Uberlândia. **Prefeitura apresenta Plano de Ação para o enfrentamento das síndromes respiratórias**, 21/05/2025.
+
+
+### Estado operacional
+
+- `NORMAL`: nenhuma sequência ativa de sinais.
+- `SIGNAL`: uma semana madura acima dos limiares.
+- `ALERT`: duas semanas consecutivas com `SIGNAL`.
+- O `ALERT` permanece ativo até ocorrerem duas semanas consecutivas sem sinal.
+- `PENDING`: semana observada, porém ainda sem maturidade mínima para classificação operacional.
+- Maturidade mínima atual: 80% de completude histórica esperada.
+- O nowcast utiliza apenas anos anteriores ao ano avaliado.
