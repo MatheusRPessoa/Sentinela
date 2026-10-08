@@ -1,0 +1,20 @@
+{
+  "executed_code_cells": 335,
+  "successful_code_cells": 335,
+  "last_cell_executed": false,
+  "errors": [],
+  "backup": "/tmp/sentinela-notebook-mogthzuk/model_performance_evaluation.ipynb",
+  "original_backup": "/tmp/sentinela-notebook-y7wkiti4/model_performance_evaluation.ipynb",
+  "modified_source_cells": [
+    163,
+    170,
+    241,
+    304
+  ],
+  "saved_variables": 315,
+  "validation": {
+    "restore_successful": true,
+    "last_cell_unchanged": true,
+    "sp_2026_timeline_exact_match": true
+  }
+}

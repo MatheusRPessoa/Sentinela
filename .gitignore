@@ -12,6 +12,9 @@ data/processed/
 # Jupyter
 .ipynb_checkpoints/
 
+# Local notebook recovery snapshots
+/reports/model_performance_recovery_*/variables.pkl
+
 # Node / Vite
 node_modules/
 dist/
