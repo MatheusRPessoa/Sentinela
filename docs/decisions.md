@@ -291,3 +291,24 @@ Esse resultado apoia a utilidade do método como ferramenta de monitoramento epi
 - `PENDING`: semana observada, porém ainda sem maturidade mínima para classificação operacional.
 - Maturidade mínima atual: 80% de completude histórica esperada.
 - O nowcast utiliza apenas anos anteriores ao ano avaliado.
+
+
+
+## SHIFT V4 — Frozen validation milestone
+
+A versão V4 do detector SHIFT foi congelada antes da validação externa.
+
+Resultados do holdout:
+
+- TP: 4
+- FN: 0
+- TN: 12
+- FP: 0
+- Sensibilidade observada: 100%
+- Especificidade observada: 100%
+- FPR observado: 0%
+
+Nenhum parâmetro foi alterado após o congelamento.
+
+Os resultados devem ser interpretados considerando o tamanho amostral limitado
+e a necessidade de validação prospectiva independente.
