@@ -131,3 +131,84 @@ def collect_record_issues(
         issues,
         columns=["source_record_number", "field", "issue_code"],
     )
+
+def validate_weekly_environment(
+    weekly_by_region: dict[str, pd.DataFrame],
+    expected_regions: list[str],
+    year: int,
+) -> None:
+
+    if set(weekly_by_region) != set(expected_regions):
+        missing = (
+            set(expected_regions)
+            - set(weekly_by_region)
+        )
+
+        extra = (
+            set(weekly_by_region)
+            - set(expected_regions)
+        )
+
+        raise RuntimeError(
+            "Regiões incompatíveis. "
+            f"Ausentes={sorted(missing)}, "
+            f"extras={sorted(extra)}"
+        )
+
+    for region, df in weekly_by_region.items():
+
+        if df.empty:
+            raise RuntimeError(
+                f"{region}: série semanal vazia"
+            )
+
+        required = {
+            "epi_week",
+            "flu_tests",
+            "flu_positive",
+            "flu_positivity",
+            "region",
+            "epi_year",
+        }
+
+        missing_columns = (
+            required - set(df.columns)
+        )
+
+        if missing_columns:
+            raise RuntimeError(
+                f"{region}: colunas ausentes: "
+                f"{sorted(missing_columns)}"
+            )
+
+        years = (
+            df["epi_year"]
+            .dropna()
+            .unique()
+        )
+
+        if (
+            len(years) != 1
+            or int(years[0]) != year
+        ):
+            raise RuntimeError(
+                f"{region}: ano inválido: "
+                f"{years}"
+            )
+
+        if (
+            df["epi_week"]
+            .duplicated()
+            .any()
+        ):
+            raise RuntimeError(
+                f"{region}: epi_week duplicada"
+            )
+
+        if (
+            df["flu_positive"]
+            > df["flu_tests"]
+        ).any():
+            raise RuntimeError(
+                f"{region}: positivos > testes"
+            )
